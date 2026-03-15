@@ -1,0 +1,178 @@
+# Replication Materials: Lynch et al. Analysis of the Anthropic Economic Index
+
+This repository contains code and instructions to reproduce the dataset construction and analyses reported in Lynch et al. All source data come from the publicly available [Anthropic Economic Index](https://huggingface.co/datasets/Anthropic/EconomicIndex) (CC-BY license, March 2025 release).
+
+## Quick Start
+
+There are three ways to run this code, listed from easiest to most manual. All three produce identical results.
+
+### Option A: GitHub Codespaces (no local setup required)
+
+This is the simplest option. It runs everything in the cloud using GitHub's free tier.
+
+1. Go to this repository on GitHub.
+2. Click the green **Code** button, then select the **Codespaces** tab.
+3. Click **Create codespace on main**.
+4. Wait 2-3 minutes for the environment to build. You will see a VS Code editor in your browser.
+5. Open a terminal (Terminal menu > New Terminal) and run:
+   ```
+   python 01_build_dataset.py
+   ```
+6. Check the `data/` folder for outputs and the `data/build_log.txt` for verification.
+
+### Option B: VS Code or Cursor with Dev Containers (local, but automated)
+
+This runs the same container on your own machine. You need Docker installed.
+
+1. **Install Docker Desktop**: Download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) and install it. Open Docker Desktop and let it finish starting up (you will see "Docker Desktop is running" in the system tray or menu bar).
+
+2. **Install VS Code or Cursor**: If you do not already have one of these, download [VS Code](https://code.visualstudio.com/) or [Cursor](https://cursor.com/).
+
+3. **Install the Dev Containers extension**: Open VS Code or Cursor. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (Mac) to open Extensions. Search for "Dev Containers" and install the one published by Microsoft.
+
+4. **Open this project folder**: In VS Code/Cursor, go to File > Open Folder and select this project folder.
+
+5. **Reopen in container**: You will see a notification in the bottom-right corner that says "Folder contains a Dev Container configuration file." Click **Reopen in Container**. If you miss the notification, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac), type "Dev Containers: Reopen in Container", and select it. The first time, this will take 2-5 minutes to build the Docker image and install packages.
+
+6. **Run the build script**: Open a terminal (Terminal > New Terminal) and run:
+   ```
+   python 01_build_dataset.py
+   ```
+
+7. **Check outputs**: Look in the `data/` folder for the three output CSV files and `build_log.txt`.
+
+### Option C: Manual setup (no Docker)
+
+If you prefer not to use Docker, you can set up the environment manually with Python and pip.
+
+1. **Install Python 3.11**: Download from [python.org/downloads](https://www.python.org/downloads/). During installation on Windows, check the box that says "Add Python to PATH." To verify, open a terminal and run:
+   ```
+   python --version
+   ```
+   You should see `Python 3.11.x`.
+
+2. **Create a virtual environment**: Open a terminal, navigate to this project folder, and run:
+   ```
+   python -m venv .venv
+   ```
+
+3. **Activate the virtual environment**:
+   - On Mac/Linux: `source .venv/bin/activate`
+   - On Windows: `.venv\Scripts\activate`
+
+   You should see `(.venv)` at the start of your terminal prompt.
+
+4. **Install dependencies**:
+   ```
+   pip install -r requirements.txt
+   ```
+
+5. **Run the build script**:
+   ```
+   python 01_build_dataset.py
+   ```
+
+6. **Check outputs**: Look in the `data/` folder.
+
+## What the Build Script Does
+
+`01_build_dataset.py` performs the following steps, corresponding to the Dataset Construction section of the Supplementary Materials:
+
+1. **Downloads** four source files from HuggingFace (task_pct_v2.csv, automation_vs_augmentation_by_task.csv, task_thinking_fractions.csv, and cluster_level_dataset.tsv).
+
+2. **Merges** the three task-level files on `task_name` to form a base of 3,365 O*NET tasks.
+
+3. **Left-joins** cluster-level data, expanding to 3,612 rows (because 94 tasks map to multiple semantic clusters).
+
+4. **Computes** three composite indices at both task and cluster levels: automation index, augmentation index, and risk management index.
+
+5. **Extracts** two analytical samples: a task-level dataset (3,365 rows for H1 and H2) and a cluster-level dataset (593 rows for H3-H6).
+
+6. **Writes** a verification log with row counts, expected counts, and SHA-256 checksums so you can confirm your output matches.
+
+## Output Files
+
+| File | Rows | Description |
+|------|------|-------------|
+| `data/integrated_dataset.csv` | 3,612 | Full multi-level dataset |
+| `data/unified_dataset_v2_full.csv` | 3,612 | Same as above (backward-compatible name) |
+| `data/task_level_dataset.csv` | 3,365 | Deduplicated task-level sample (H1, H2) |
+| `data/cluster_level_dataset.csv` | 593 | Task-cluster combinations (H3-H6) |
+| `data/build_log.txt` | — | Verification log with row counts, structural checks, and SHA-256 checksums |
+
+## Verifying Your Results
+
+After running the build script, open `data/build_log.txt`. You should see:
+
+```
+MATCH STATUS
+  Integrated:    PASS
+  Task-level:    PASS
+  Cluster-level: PASS
+```
+
+The SHA-256 checksums in the log file should be identical across all machines running the same pinned package versions. If any row count shows "CHECK" instead of "PASS", the upstream data may have changed — contact the authors.
+
+## Running the Analysis
+
+After the build script completes successfully:
+
+```
+python 02_analysis.py
+```
+
+This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Results are saved to the `results/` directory.
+
+To generate a side-by-side comparison of the submitted manuscript values versus the corrected replication values:
+
+```
+python 03_comparison.py
+```
+
+This produces `results/comparison_report.txt`, which documents every discrepancy and explains why each changed.
+
+## Replication Notes
+
+`REPLICATION_NOTES.md` provides a detailed explanation of all discrepancies between the submitted manuscript and the corrected replication, including the leverage-point analysis for task-level coefficients and the cluster-level sample size investigation.
+
+## Project Structure
+
+```
+.
+├── .devcontainer/
+│   ├── devcontainer.json      # VS Code / Codespaces container config
+│   └── Dockerfile             # Container image definition
+├── data/                      # Created by 01_build_dataset.py
+│   ├── raw/                   # Downloaded source files
+│   ├── integrated_dataset.csv
+│   ├── task_level_dataset.csv
+│   ├── cluster_level_dataset.csv
+│   └── build_log.txt
+├── results/                   # Created by 02_analysis.py and 03_comparison.py
+│   ├── H1_results.txt ... H6_results.txt
+│   ├── robustness_checks.txt
+│   ├── comparison_report.txt
+│   └── analysis_log.txt
+├── 01_build_dataset.py        # Data construction (run this first)
+├── 02_analysis.py             # Hypothesis testing (H1-H6 + robustness)
+├── 03_comparison.py           # Manuscript vs. replication comparison
+├── REPLICATION_NOTES.md       # Explains all discrepancies
+├── requirements.txt           # Python dependencies
+└── README.md                  # This file
+```
+
+## Requirements
+
+- Python 3.11
+- Internet connection (to download data from HuggingFace on first run)
+- Packages listed in `requirements.txt` (installed automatically via the dev container or manually via pip)
+
+## License
+
+Analysis code: MIT License. Source data: CC-BY (Anthropic, 2025).
+
+## Citation
+
+If you use this code, please cite both this repository and the Anthropic Economic Index:
+
+> Handa, K., Tamkin, A., McCain, M., et al. (2025). Which economic tasks are performed with AI? Evidence from millions of Claude conversations. arXiv preprint arXiv:2503.04761.

@@ -1,0 +1,12 @@
+# Lynch et al. - Anthropic Economic Index Analysis
+# Minimum compatible versions for reproducibility of results.
+# Tested with Python 3.9+. For exact version pinning, use the dev container.
+#
+# To install: pip install -r requirements.txt
+# Or use the dev container (recommended) which installs these automatically.
+
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+statsmodels>=0.14.0,<1.0.0
+huggingface_hub>=0.20.0,<2.0.0
