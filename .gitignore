@@ -1,0 +1,16 @@
+# Generated data and results (reproduced by running the scripts)
+data/
+results/
+
+# Local working notes (not for public distribution)
+_working_notes/
+
+# Python virtual environment
+.venv/
+
+# Mac system files
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.pyc

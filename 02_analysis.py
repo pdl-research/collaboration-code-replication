@@ -332,15 +332,8 @@ def run_h2(task_df):
     H2b: risk_management_index -> directive (delegation style)
     H2c: risk_management_index -> task_iteration (collaboration style)
 
-    Note on H2a coefficient magnitude:
-        The submitted manuscript reported β = 2.484 on n = 3,611 (integrated
-        dataset with multi-cluster duplicate rows). Those 247 duplicates are
-        the highest-usage tasks (avg pct ≈ 3.66 vs. population mean ≈ 0.03),
-        creating extreme leverage in OLS. Deduplication to n = 3,365 removes
-        this non-independence and yields β ≈ 0.67 — the same direction and
-        significance (p < .001), but a substantially smaller coefficient.
-        This is the correct result; the inflated coefficient was an artifact
-        of counting high-leverage observations multiple times.
+    Uses the deduplicated task-level sample (one row per unique O*NET task)
+    to ensure independence of observations.
     """
     lines = []
     lines.append("=" * 70)

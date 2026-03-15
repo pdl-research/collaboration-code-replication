@@ -123,18 +123,6 @@ python 02_analysis.py
 
 This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Results are saved to the `results/` directory.
 
-To generate a side-by-side comparison of the submitted manuscript values versus the corrected replication values:
-
-```
-python 03_comparison.py
-```
-
-This produces `results/comparison_report.txt`, which documents every discrepancy and explains why each changed.
-
-## Replication Notes
-
-`REPLICATION_NOTES.md` provides a detailed explanation of all discrepancies between the submitted manuscript and the corrected replication, including the leverage-point analysis for task-level coefficients and the cluster-level sample size investigation.
-
 ## Project Structure
 
 ```
@@ -148,15 +136,12 @@ This produces `results/comparison_report.txt`, which documents every discrepancy
 │   ├── task_level_dataset.csv
 │   ├── cluster_level_dataset.csv
 │   └── build_log.txt
-├── results/                   # Created by 02_analysis.py and 03_comparison.py
+├── results/                   # Created by 02_analysis.py
 │   ├── H1_results.txt ... H6_results.txt
 │   ├── robustness_checks.txt
-│   ├── comparison_report.txt
 │   └── analysis_log.txt
 ├── 01_build_dataset.py        # Data construction (run this first)
 ├── 02_analysis.py             # Hypothesis testing (H1-H6 + robustness)
-├── 03_comparison.py           # Manuscript vs. replication comparison
-├── REPLICATION_NOTES.md       # Explains all discrepancies
 ├── requirements.txt           # Python dependencies
 └── README.md                  # This file
 ```
