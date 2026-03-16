@@ -78,17 +78,19 @@ If you prefer not to use Docker, you can set up the environment manually with Py
 
 `01_build_dataset.py` performs the following steps, corresponding to the Dataset Construction section of the Supplementary Materials:
 
-1. **Downloads** four source files from HuggingFace (task_pct_v2.csv, automation_vs_augmentation_by_task.csv, task_thinking_fractions.csv, and cluster_level_dataset.tsv).
+1. **Downloads** four source files from HuggingFace (task_pct_v2.csv, automation_vs_augmentation_by_task.csv, task_thinking_fractions.csv, and cluster_level_dataset.tsv). If the files already exist locally from a prior run, they are reused without contacting HuggingFace.
 
 2. **Merges** the three task-level files on `task_name` to form a base of 3,365 O*NET tasks.
 
 3. **Left-joins** cluster-level data, expanding to 3,612 rows (because 94 tasks map to multiple semantic clusters).
 
-4. **Computes** three composite indices at both task and cluster levels: automation index, augmentation index, and risk management index.
+4. **Preserves** privacy-suppressed NaN values in cluster-level collaboration ratios. Anthropic's Clio system withholds ratios below approximately 0.5% to protect user privacy; these appear as NaN in the source data and are kept as-is (not replaced with zero).
 
-5. **Extracts** two analytical samples: a task-level dataset (3,365 rows for H1 and H2) and a cluster-level dataset (593 rows for H3-H6).
+5. **Computes** three composite indices at both task and cluster levels: automation index, augmentation index, and risk management index. When any component ratio is NaN, the composite index is also NaN, which naturally reduces the analytical sample size for models that use those indices.
 
-6. **Writes** a verification log with row counts, expected counts, and SHA-256 checksums so you can confirm your output matches.
+6. **Extracts** two analytical samples: a task-level dataset (3,365 rows for H1 and H2) and a cluster-level dataset (593 rows for H3-H6).
+
+7. **Writes** a verification log with row counts, expected counts, and SHA-256 checksums so you can confirm your output matches.
 
 ## Output Files
 
@@ -121,7 +123,7 @@ After the build script completes successfully:
 python 02_analysis.py
 ```
 
-This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Results are saved to the `results/` directory.
+This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Results are saved to the `results/` directory. Cluster-level sample sizes vary by hypothesis because OLS automatically drops rows with NaN in any model variable: H3 uses n=508, H4 uses n=488 (the additional exclusions come from NaN propagation through the two composite indices that H4 requires).
 
 ## Project Structure
 
@@ -142,6 +144,7 @@ This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robus
 │   └── analysis_log.txt
 ├── 01_build_dataset.py        # Data construction (run this first)
 ├── 02_analysis.py             # Hypothesis testing (H1-H6 + robustness)
+├── Lynch Supplementary Materials Data Sources and Dataset Construction.md
 ├── requirements.txt           # Python dependencies
 └── README.md                  # This file
 ```
