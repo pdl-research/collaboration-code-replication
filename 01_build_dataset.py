@@ -93,21 +93,31 @@ def normalize_task_name(s: pd.Series) -> pd.Series:
 # ---------------------------------------------------------------------------
 
 def download_source_files() -> dict[str, str]:
-    """Download all source files and return local paths."""
+    """Download all source files and return local paths.
+
+    If the files already exist locally (from a prior download), they are reused
+    without contacting HuggingFace.  This makes the build reproducible in
+    offline / sandboxed environments.
+    """
     os.makedirs(RAW_DIR, exist_ok=True)
     local_paths = {}
 
     for key, hf_path in SOURCE_FILES.items():
-        logger.info(f"Downloading {hf_path}...")
-        local_path = hf_hub_download(
-            repo_id=REPO_ID,
-            filename=hf_path,
-            repo_type="dataset",
-            local_dir=RAW_DIR,
-        )
-        local_paths[key] = local_path
-        file_hash = sha256_of_file(local_path)
-        logger.info(f"  -> {local_path} (SHA-256: {file_hash[:16]}...)")
+        local_candidate = os.path.join(RAW_DIR, hf_path)
+        if os.path.isfile(local_candidate):
+            logger.info(f"Using cached {hf_path}")
+            local_paths[key] = local_candidate
+        else:
+            logger.info(f"Downloading {hf_path}...")
+            local_path = hf_hub_download(
+                repo_id=REPO_ID,
+                filename=hf_path,
+                repo_type="dataset",
+                local_dir=RAW_DIR,
+            )
+            local_paths[key] = local_path
+        file_hash = sha256_of_file(local_paths[key])
+        logger.info(f"  -> {local_paths[key]} (SHA-256: {file_hash[:16]}...)")
 
     return local_paths
 
@@ -269,15 +279,18 @@ def prepare_cluster_data(frames: dict[str, pd.DataFrame]) -> pd.DataFrame:
     }
     clusters = clusters.rename(columns=collab_renames)
 
-    # Convert cluster numeric columns to float (some cells are empty strings
-    # in the TSV, which pandas reads as NaN — fill with 0 for ratio columns)
+    # Convert cluster numeric columns to float.  NaN values in the source
+    # represent privacy-suppressed observations (Anthropic's Clio system
+    # withholds ratios below ~0.5 %).  They must stay NaN — not be replaced
+    # with 0.0 — because 0.0 never occurs naturally in the released data and
+    # filling would create artificial leverage points in downstream models.
     cluster_ratio_cols = [
         "cluster_directive", "cluster_feedback_loop", "cluster_task_iteration",
         "cluster_learning", "cluster_validation", "cluster_none",
     ]
     for col in cluster_ratio_cols:
         if col in clusters.columns:
-            clusters[col] = pd.to_numeric(clusters[col], errors="coerce").fillna(0.0)
+            clusters[col] = pd.to_numeric(clusters[col], errors="coerce")
     # cluster_thinking_fraction: keep NaN where not available (don't fill with 0)
     if "cluster_thinking_fraction" in clusters.columns:
         clusters["cluster_thinking_fraction"] = pd.to_numeric(

@@ -5,6 +5,9 @@ results/
 # Local working notes (not for public distribution)
 _working_notes/
 
+# Pre-fix archive (provenance record, not for distribution)
+_archive_pre_nan_fix/
+
 # Python virtual environment
 .venv/
 

@@ -679,18 +679,21 @@ def run_robustness_checks(task_df, cluster_df):
 
     # Control 3: Exclude high-influence observations (Cook's D > 4/n)
     lines.append("\n--- H3 Sensitivity: Excluding High-Influence Observations ---\n")
-    dv_h3_full = df_h3["cluster_thinking_fraction"]
-    X_h3_full = sm.add_constant(df_h3[["cluster_augmentation_index"]])
-    model_h3_full = sm.OLS(dv_h3_full, X_h3_full, missing="drop").fit()
+    # Work on the complete-case subset so Cook's D indices align with rows
+    h3_vars = ["cluster_thinking_fraction", "cluster_augmentation_index"]
+    df_h3_complete = df_h3.dropna(subset=h3_vars).copy()
+    dv_h3_full = df_h3_complete["cluster_thinking_fraction"]
+    X_h3_full = sm.add_constant(df_h3_complete[["cluster_augmentation_index"]])
+    model_h3_full = sm.OLS(dv_h3_full, X_h3_full).fit()
     influence = model_h3_full.get_influence()
     cooks_d = influence.cooks_distance[0]
-    threshold = 4 / len(df_h3)
+    threshold = 4 / len(df_h3_complete)
     high_influence_mask = cooks_d > threshold
     n_excluded = high_influence_mask.sum()
     lines.append(f"  Cook's D threshold: {threshold:.6f}")
     lines.append(f"  High-influence observations excluded: {n_excluded}")
 
-    df_h3_trimmed = df_h3[~high_influence_mask]
+    df_h3_trimmed = df_h3_complete[~high_influence_mask]
     if len(df_h3_trimmed) > 10:
         result_trimmed = ols_with_hc3(
             df_h3_trimmed["cluster_thinking_fraction"],
