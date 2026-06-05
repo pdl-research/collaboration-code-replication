@@ -121,9 +121,17 @@ After the build script completes successfully:
 
 ```
 python 02_analysis.py
+python 03_reviewer_models.py
+python 04_batchB.py
 ```
 
-This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Results are saved to the `results/` directory. Cluster-level sample sizes vary by hypothesis because OLS automatically drops rows with NaN in any model variable: H3 uses n=508, H4 uses n=488 (the additional exclusions come from NaN propagation through the two composite indices that H4 requires).
+`02_analysis.py` runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Cluster-level sample sizes vary by hypothesis because OLS automatically drops rows with NaN in any model variable: H3 uses n=508, H4 uses n=488 (the additional exclusions come from NaN propagation through the two composite indices that H4 requires).
+
+`03_reviewer_models.py` runs the model comparison suite for the highly skewed dependent variable — OLS, log-linear OLS (with Duan smearing for raw-scale RMSE), fractional logit on DV/100 (Papke & Wooldridge, 1996), GLM Gamma with log link, and Poisson QMLE — plus robustness checks excluding high-share tasks (share > 1.0).
+
+`04_batchB.py` runs (1) cluster-robust standard errors grouped by task for all cluster-level models, addressing non-independence of the 593 cluster rows derived from 346 unique tasks; (2) bootstrapped percentile confidence intervals for the H5 indirect effect (5,000 replications, seed 42; both IID and task-cluster resampling); and (3) H3 sensitivity analyses with complexity/novelty proxies.
+
+All results are saved to the `results/` directory. Compare your output against `EXPECTED_RESULTS.md`. See `CHANGELOG.md` for the v2.0 revision history.
 
 ## Project Structure
 
@@ -141,9 +149,15 @@ This runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robus
 ├── results/                   # Created by 02_analysis.py
 │   ├── H1_results.txt ... H6_results.txt
 │   ├── robustness_checks.txt
+│   ├── batchA_reviewer_models.txt
+│   ├── batchB_results.txt
 │   └── analysis_log.txt
 ├── 01_build_dataset.py        # Data construction (run this first)
 ├── 02_analysis.py             # Hypothesis testing (H1-H6 + robustness)
+├── 03_reviewer_models.py      # Model comparison suite + outlier robustness
+├── 04_batchB.py               # Clustered SEs, bootstrap mediation, H3 controls
+├── EXPECTED_RESULTS.md        # Key coefficients from a verified run
+├── CHANGELOG.md               # Revision history
 ├── Lynch Supplementary Materials Data Sources and Dataset Construction.md
 ├── requirements.txt           # Python dependencies
 └── README.md                  # This file

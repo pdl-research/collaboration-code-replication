@@ -615,18 +615,17 @@ def run_robustness_checks(task_df, cluster_df):
     # ----- Fractional logit for H1 -----
     lines.append("\n--- Fractional Logit: H1 (augmentation_index -> task_conversation_share) ---\n")
 
-    # Normalize DV to (0,1) range for fractional logit
-    # task_conversation_share is a percentage; ensure it's in (0,1)
-    dv_frac = task_df["task_conversation_share"].copy()
-    # Scale to (0,1) if needed (values are percentages that can exceed 1)
-    dv_max = dv_frac.max()
-    if dv_max > 1:
-        # Rescale to (0,1) for fractional logit
-        dv_frac = dv_frac / (dv_max * 1.01)  # slight padding to avoid exact 0 or 1
-    # Also ensure no exact 0s
-    dv_frac = dv_frac.clip(lower=1e-6, upper=1 - 1e-6)
+    # task_conversation_share is each task's percentage share of ALL
+    # conversations (sums to ~100 across tasks). Dividing by 100 yields the
+    # true proportion in (0,1) — the natural scale for fractional logit
+    # (Papke & Wooldridge, 1996). Complete cases only: GLM cannot accept NaN.
+    frac_df = task_df.dropna(
+        subset=["task_conversation_share", "augmentation_index",
+                "risk_management_index"]
+    ).copy()
+    dv_frac = frac_df["task_conversation_share"] / 100.0
 
-    X_frac = sm.add_constant(task_df[["augmentation_index"]])
+    X_frac = sm.add_constant(frac_df[["augmentation_index"]])
     try:
         frac_logit = GLM(
             dv_frac, X_frac,
@@ -639,7 +638,7 @@ def run_robustness_checks(task_df, cluster_df):
 
     # ----- Fractional logit for H2 -----
     lines.append("\n--- Fractional Logit: H2 (risk_management_index -> task_conversation_share) ---\n")
-    X_frac2 = sm.add_constant(task_df[["risk_management_index"]])
+    X_frac2 = sm.add_constant(frac_df[["risk_management_index"]])
     try:
         frac_logit2 = GLM(
             dv_frac, X_frac2,
