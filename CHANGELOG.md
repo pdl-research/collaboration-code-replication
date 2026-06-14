@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.1 — Replication package for public release (2026-06-14)
+
+Packaging-only update; no analysis results changed.
+
+### Fixed
+- **`make_figures.py`** used absolute, machine-specific paths and so failed on
+  any other machine. Paths are now resolved relative to the script location, so
+  the figures regenerate from `./data/` on a fresh clone.
+
+### Added
+- `matplotlib` added to `requirements.txt` (needed by `make_figures.py`).
+- Public CC-BY source files included under `data/raw/`, so the build runs fully
+  offline; `.gitignore` updated to track `data/raw/` while ignoring the
+  generated build outputs and `results/`.
+- `README.md` updated to document `make_figures.py` and the offline build.
+- Supplementary Materials markdown refreshed to include the new Robustness
+  Checks section (model comparison, high-share-task exclusion, clustered SEs,
+  bootstrap CIs, Cook's-D, H3 complexity proxies; Supplementary Tables 3-4).
+
 ## v2.0 — Revise & Resubmit update (2026-06-05)
 
 Extensions added in response to peer review. All v1.0 results remain

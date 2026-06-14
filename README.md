@@ -78,7 +78,7 @@ If you prefer not to use Docker, you can set up the environment manually with Py
 
 `01_build_dataset.py` performs the following steps, corresponding to the Dataset Construction section of the Supplementary Materials:
 
-1. **Downloads** four source files from HuggingFace (task_pct_v2.csv, automation_vs_augmentation_by_task.csv, task_thinking_fractions.csv, and cluster_level_dataset.tsv). If the files already exist locally from a prior run, they are reused without contacting HuggingFace.
+1. **Loads** four source files (task_pct_v2.csv, automation_vs_augmentation_by_task.csv, task_thinking_fractions.csv, and cluster_level_dataset.tsv). These public CC-BY source files are included in `data/raw/`, so the build runs fully offline. If they are ever removed, the script downloads them from HuggingFace instead.
 
 2. **Merges** the three task-level files on `task_name` to form a base of 3,365 O*NET tasks.
 
@@ -123,6 +123,7 @@ After the build script completes successfully:
 python 02_analysis.py
 python 03_reviewer_models.py
 python 04_batchB.py
+python make_figures.py
 ```
 
 `02_analysis.py` runs all six hypotheses (H1-H6) with HC3 robust standard errors, plus robustness checks (fractional logit, Cook's D trimming). Cluster-level sample sizes vary by hypothesis because OLS automatically drops rows with NaN in any model variable: H3 uses n=508, H4 uses n=488 (the additional exclusions come from NaN propagation through the two composite indices that H4 requires).
@@ -130,6 +131,8 @@ python 04_batchB.py
 `03_reviewer_models.py` runs the model comparison suite for the highly skewed dependent variable — OLS, log-linear OLS (with Duan smearing for raw-scale RMSE), fractional logit on DV/100 (Papke & Wooldridge, 1996), GLM Gamma with log link, and Poisson QMLE — plus robustness checks excluding high-share tasks (share > 1.0).
 
 `04_batchB.py` runs (1) cluster-robust standard errors grouped by task for all cluster-level models, addressing non-independence of the 593 cluster rows derived from 346 unique tasks; (2) bootstrapped percentile confidence intervals for the H5 indirect effect (5,000 replications, seed 42; both IID and task-cluster resampling); and (3) H3 sensitivity analyses with complexity/novelty proxies.
+
+`make_figures.py` regenerates Figures 1-4 from the built datasets and writes them to the repository root (`Figure 1.jpg` through `Figure 4.jpg`). It re-derives each figure's coefficients from the data and asserts they match the reported values, so a successful run is itself a check on the figures. (Requires `matplotlib`, included in `requirements.txt`.)
 
 All results are saved to the `results/` directory. Compare your output against `EXPECTED_RESULTS.md`. See `CHANGELOG.md` for the v2.0 revision history.
 
@@ -140,13 +143,13 @@ All results are saved to the `results/` directory. Compare your output against `
 ├── .devcontainer/
 │   ├── devcontainer.json      # VS Code / Codespaces container config
 │   └── Dockerfile             # Container image definition
-├── data/                      # Created by 01_build_dataset.py
-│   ├── raw/                   # Downloaded source files
-│   ├── integrated_dataset.csv
-│   ├── task_level_dataset.csv
-│   ├── cluster_level_dataset.csv
-│   └── build_log.txt
-├── results/                   # Created by 02_analysis.py
+├── data/
+│   ├── raw/                   # Public CC-BY source files (included; enables offline build)
+│   ├── integrated_dataset.csv     # created by 01_build_dataset.py (gitignored)
+│   ├── task_level_dataset.csv     # created by 01_build_dataset.py (gitignored)
+│   ├── cluster_level_dataset.csv  # created by 01_build_dataset.py (gitignored)
+│   └── build_log.txt              # created by 01_build_dataset.py (gitignored)
+├── results/                   # Created by 02/03/04 (gitignored)
 │   ├── H1_results.txt ... H6_results.txt
 │   ├── robustness_checks.txt
 │   ├── batchA_reviewer_models.txt
@@ -156,7 +159,10 @@ All results are saved to the `results/` directory. Compare your output against `
 ├── 02_analysis.py             # Hypothesis testing (H1-H6 + robustness)
 ├── 03_reviewer_models.py      # Model comparison suite + outlier robustness
 ├── 04_batchB.py               # Clustered SEs, bootstrap mediation, H3 controls
+├── make_figures.py            # Regenerates Figures 1-4 from the built data
+├── Figure 1.jpg ... Figure 4.jpg  # Manuscript figures (regenerable via make_figures.py)
 ├── EXPECTED_RESULTS.md        # Key coefficients from a verified run
+├── VERIFICATION_2026-06-13.md # End-to-end reproduction log
 ├── CHANGELOG.md               # Revision history
 ├── Lynch Supplementary Materials Data Sources and Dataset Construction.md
 ├── requirements.txt           # Python dependencies
@@ -166,7 +172,7 @@ All results are saved to the `results/` directory. Compare your output against `
 ## Requirements
 
 - Python 3.11
-- Internet connection (to download data from HuggingFace on first run)
+- Internet connection optional: the public source files are bundled in `data/raw/`, so the build runs offline (if those files are removed, the build downloads them from HuggingFace)
 - Packages listed in `requirements.txt` (installed automatically via the dev container or manually via pip)
 
 ## License
