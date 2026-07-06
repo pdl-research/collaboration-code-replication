@@ -254,13 +254,11 @@ this submission and will be made publicly available upon acceptance.
 
 ### REFERENCES 
 
-Anthropic. (2025b). Anthropic Economic Index \[Data set\]. Hugging Face.
-[<span class="underline">https://huggingface.co/datasets/Anthropic/EconomicIndex</span>](https://huggingface.co/datasets/Anthropic/EconomicIndex)
+Anthropic. (2025). Anthropic Economic Index [Data set]. Hugging Face. https://huggingface.co/datasets/Anthropic/EconomicIndex (CC-BY)
 
-Handa, K., Carlin, B., Dragan, A., Ganguli, D., Grosse, R., Goodman, N.,
-et al. (2025). Which economic tasks are performed with AI? Evidence from
-millions of Claude conversations. Anthropic Research.
-[<span class="underline">https://assets.anthropic.com/m/2e23255f1e84ca97/original/Economic\_Tasks\_AI\_Paper.pdf</span>](https://assets.anthropic.com/m/2e23255f1e84ca97/original/Economic_Tasks_AI_Paper.pdf)
+Handa, K., Tamkin, A., McCain, M., Huang, S., Durmus, E., Heck, S., Mueller, J., Hong, J., Ritchie, S., Belonax, T., Troy, K. K., Amodei, D., Kaplan, J., Clark, J., & Ganguli, D. (2025). Which economic tasks are performed with AI? Evidence from millions of Claude conversations. arXiv. https://doi.org/10.48550/arXiv.2503.04761
+
+Lynch, P. D. (2026). Replication materials for "The Collaboration Code: How humans and AI work together across millions of conversations on job tasks" (Version v2.1) [Source code and data]. GitHub. https://github.com/pdl-research/collaboration-code-replication
 
 National Center for O*NET Development. (2025). O*NET OnLine.
 [<span class="underline">https://www.onetonline.org/</span>](https://www.onetonline.org/)
@@ -270,6 +268,4 @@ generative AI technologies: A multi-theoretical framework integrating
 functional, risk, and sociolegal factors. Front. Artif. Intell.
 8:1565927. doi: 10.3389/frai.2025.1565927
 
-Tamkin, A., Askell, A., Lovitt, L., Durmus, E., Joseph, N., Kravec, S.,
-et al. (2024). CLIO: Privacy-preserving insights into real-world AI use.
-arXiv preprint arXiv:2410.13265.
+Tamkin, Alex, Miles McCain, Kunal Handa, Esin Durmus, Liane Lovitt, Ankur Rathi, Saffron Huang et al. "Clio: Privacy-preserving insights into real-world ai use." arXiv preprint arXiv:2412.13678 (2024).
