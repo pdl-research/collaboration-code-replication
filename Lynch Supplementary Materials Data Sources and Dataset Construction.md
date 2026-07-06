@@ -249,8 +249,7 @@ two further scripts provide the model-comparison and sensitivity
 analyses reported in the manuscript. The build script writes a
 verification log reporting row counts and SHA-256 checksums so that
 replication output can be confirmed against the values reported here.
-The complete repository is provided to the editor and reviewers with
-this submission and will be made publicly available upon acceptance.
+The complete replication repository is publicly available at https://github.com/pdl-research/collaboration-code-replication (release v2.1).
 
 ### REFERENCES 
 
